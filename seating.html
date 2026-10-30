@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seating</title>
+    <link rel="stylesheet" href="/static/css/global.css" />
+    <link rel="stylesheet" href="/static/css/seating.css" />
+    <link rel="stylesheet" href="/static/css/tables.css" />
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar"><div class="brand">SeatingSystem</div><nav><a href="/dashboard">Dashboard</a><a href="/students">Students</a><a href="/teachers">Teachers</a><a href="/rooms">Rooms</a><a href="/subjects">Subjects</a><a href="/exams">Exams</a><a href="/timetable">Timetable</a><a class="active" href="/seating">Seating</a><a href="/attendance">Attendance</a><a href="/reports">Reports</a><a href="/notifications">Notifications</a><a href="/settings">Settings</a></nav></aside>
+        <main class="content"><div class="topbar"><h2>Seating Arrangement</h2><div class="topbar-right"><button class="secondary-btn" onclick="setTheme(!document.body.classList.contains('dark-mode'))">Dark Mode</button><button class="primary-btn" onclick="logoutUser()">Logout</button></div></div>
+            <section class="card">
+                <h3>Generate Seating</h3>
+                <form id="seating-form" class="form-panel">
+                    <input type="number" name="exam_id" placeholder="Exam ID" required />
+                    <div class="form-actions wide"><button type="submit" class="primary-btn">Generate Arrangement</button></div>
+                </form>
+            </section>
+            <section class="card" style="margin-top: 20px;">
+                <h3>Seating Map</h3>
+                <div class="seat-grid">
+                    <div class="seat available">A01</div>
+                    <div class="seat available">A02</div>
+                    <div class="seat blocked">A03</div>
+                    <div class="seat available">A04</div>
+                    <div class="seat reserved">A05</div>
+                    <div class="seat occupied">A06</div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div id="toast-container"></div>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/common.js"></script>
+    <script>
+        document.getElementById('seating-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const payload = Object.fromEntries(new FormData(event.target).entries());
+            try {
+                const response = await apiRequest('/api/seating/generate', { method: 'POST', body: payload });
+                if (response.success) {
+                    showToast('Arrangement generated successfully.', 'success');
+                } else {
+                    showToast(response.message || 'Generation failed.', 'error');
+                }
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+        async function logoutUser() { try { await apiRequest('/api/auth/logout', { method: 'POST' }); window.location.href = '/login'; } catch (error) { showToast('Logout failed', 'error'); } }
+        checkAuth();
+    </script>
+</body>
+</html>

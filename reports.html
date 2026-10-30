@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports</title>
+    <link rel="stylesheet" href="/static/css/global.css" />
+    <link rel="stylesheet" href="/static/css/reports.css" />
+    <link rel="stylesheet" href="/static/css/tables.css" />
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar"><div class="brand">SeatingSystem</div><nav><a href="/dashboard">Dashboard</a><a href="/students">Students</a><a href="/teachers">Teachers</a><a href="/rooms">Rooms</a><a href="/subjects">Subjects</a><a href="/exams">Exams</a><a href="/timetable">Timetable</a><a href="/seating">Seating</a><a href="/attendance">Attendance</a><a class="active" href="/reports">Reports</a><a href="/notifications">Notifications</a><a href="/settings">Settings</a></nav></aside>
+        <main class="content"><div class="topbar"><h2>Reports</h2><div class="topbar-right"><button class="secondary-btn" onclick="setTheme(!document.body.classList.contains('dark-mode'))">Dark Mode</button><button class="primary-btn" onclick="logoutUser()">Logout</button></div></div>
+            <section class="card report-card">
+                <h3>Report Summary</h3>
+                <div class="report-grid" id="report-grid"></div>
+            </section>
+        </main>
+    </div>
+    <div id="toast-container"></div>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/common.js"></script>
+    <script>
+        async function loadReports() {
+            try {
+                const response = await apiRequest('/api/reports');
+                const reports = response.reports || {};
+                const cards = [
+                    ['Student Seating', (reports.student_seating || []).length],
+                    ['Room Seating', (reports.room_seating || []).length],
+                    ['Exam Summary', (reports.exam_summary || []).length],
+                    ['Attendance Summary', (reports.attendance_summary || []).length]
+                ];
+                document.getElementById('report-grid').innerHTML = cards.map(([label, value]) => `
+                    <div class="card"><div class="label">${label}</div><div class="value" style="font-size:2rem; margin-top:12px;">${value}</div></div>
+                `).join('');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+        async function logoutUser() { try { await apiRequest('/api/auth/logout', { method: 'POST' }); window.location.href = '/login'; } catch (error) { showToast('Logout failed', 'error'); } }
+        checkAuth();
+        loadReports();
+    </script>
+</body>
+</html>
